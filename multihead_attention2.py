@@ -41,11 +41,12 @@ class MultiHeadAttention(nn.Module):
         # calculate qkT / sqrt(d_head)
         q_k_sim = torch.einsum('ibhd,jbhd->ijbh', query, key)
         q_k_sim *= 1 / math.sqrt(self.head_dim)
-        # mask: [seq_len_q, seq_len_k, batch_size]
-        assert mask.shape[0] == 1 or mask.shape[0] == q_k_sim.shape[0]
-        assert mask.shape[1] == q_k_sim.shape[1]
-        assert mask.shape[2] == 1 or mask.shape[2] == q_k_sim.shape[2]
         if mask is not None:
+            # mask: [seq_len_q, seq_len_k, batch_size]
+            assert mask.shape[0] == 1 or mask.shape[0] == q_k_sim.shape[0]
+            assert mask.shape[1] == q_k_sim.shape[1]
+            assert mask.shape[2] == 1 or mask.shape[2] == q_k_sim.shape[2]
+            mask = mask.unsqueeze(-1)
             q_k_sim = q_k_sim.masked_fill(mask==0, float('-inf'))
         # softmax on seq_len_k dim (dim=1)
         q_k_sim = self.softmax(q_k_sim)
@@ -57,4 +58,5 @@ class MultiHeadAttention(nn.Module):
         self.attention = attention.detach()
         # reshape and return
         attention = rearrange(attention, 'i b h d -> i b (h d)')
+        # lack the output linear layer
         return attention

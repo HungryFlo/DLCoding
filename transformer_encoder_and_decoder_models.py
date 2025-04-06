@@ -1,8 +1,15 @@
+'''
+get_positional_encoding
+
+'''
+
 import torch
 import torch.nn as nn
 import math
+from copy import deepcopy
 
 from multihead_attention import MultiHeadAttention
+
 
 def get_positional_encoding(d_model: int, max_len: int=5000):
     encodings = torch.zeros(max_len, d_model)
@@ -16,6 +23,9 @@ def get_positional_encoding(d_model: int, max_len: int=5000):
     encodings = encodings.unsqueeze(1).requires_grad_(False)
     
     return encodings
+
+def clone_module_list(module: nn.Module, n: int) -> nn.ModuleList:
+    return nn.ModuleList([deepcopy(module) for _ in range(n)])
 
 class EmbeddingsWithPositionalEncoding(nn.Module):
     def __init__(self, 
@@ -98,10 +108,12 @@ class TransformerLayer(nn.Module):
         self_attn = self.self_attn(query=z, key=z, value=z, mask=mask)
         # res link
         x = x + self.dropout(self_attn)
+        
         # cross_attn in decoder block
         if src is not None:
             z = self.norm_src_attn(x)
-            attn_src = self.src_attn(query=z, key=z, value=src, mask = src_mask)
+            # query from decoder, key and value from encoder
+            attn_src = self.src_attn(query=z, key=src, value=src, mask = src_mask)
             x = x + self.dropout(attn_src)
         # norm before feed-forward
         z = self.norm_ff(x)
