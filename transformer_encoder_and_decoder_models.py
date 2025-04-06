@@ -13,8 +13,8 @@ from multihead_attention import MultiHeadAttention
 
 def get_positional_encoding(d_model: int, max_len: int=5000):
     encodings = torch.zeros(max_len, d_model)
-    position = torch.arrange(0, max_len, dtype=torch.float32).unsqueeze(1)
-    two_i = torch.arrange(0, d_model, 2, dtype=torch.float32)
+    position = torch.arange(0, max_len, dtype=torch.float32).unsqueeze(1)
+    two_i = torch.arange(0, d_model, 2, dtype=torch.float32)
     div_term = torch.exp(two_i * -(math.log(10000.0) / d_model))
     # 0::2 means select every 2nd column starting from index 0
     # : means select all rows
