@@ -65,7 +65,7 @@ class MultiHeadAttention(nn.Module):
         mask = mask.unsqueeze(-1) # add the heads dim [seq_len_q, seq_len_k, batch_size, heads]
         return mask
     
-    def get_sccores(self, query: torch.Tensor, key: torch.Tensor):
+    def get_scores(self, query: torch.Tensor, key: torch.Tensor):
         # [seq_len, batch_size, heads, d_k] -> [seq_len_q, seq_len_k, batch_size, heads]
         return torch.einsum('ibhd,jbhd->ijbh', query, key)
     
