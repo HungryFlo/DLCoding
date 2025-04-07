@@ -1,10 +1,21 @@
+'''
+Q:[seq_len_q, batch_size, d_model] K: [seq_len_k, batch_size, d_model] R: [l_max, d_model] --broadcast--> [seq_len_q, seq_len_k, batch_size, d_model]
+u: [d_model] v: [d_model]
+content-base addressing: Q'K
+content-dependent positional bias: Q'R
+global content bias: u'K
+global positional bias: v'R
+'''
 import torch
 from torch import nn
 from multihead_attention import MultiHeadAttention
 
 def shift_right(x: torch.Tensor):
     zero_pad = x.new_zeros(x.shape[0], 1, *x.shape[2:])
-    pass
+    x_padded = torch.cat([x, zero_pad], dim=1)
+    x_padded = x_padded.view(x.shape[1]+1, x.shape[0], *x.shape[2:])
+    x = x_padded[:-1].view_as(x)
+    return x
     
 class RelativeMultiHeadAttention(MultiHeadAttention):
     def __init__(self, heads: int, d_model: int, dropout_prob: float=0.1):
