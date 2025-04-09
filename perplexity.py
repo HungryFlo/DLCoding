@@ -1,8 +1,8 @@
 from datasets import Dataset
-from transformers import AutoTokenizer, AutoModelForCasualLM, DataCollectorForSeq2Seq
+from transformers import AutoTokenizer, AutoModelForCausalLM, DataCollectorForSeq2Seq
 
 device = "cuda"
-model = AutoModelForCasualLM.from_pretrained("xxx", cache_dir='xxxxxx').to(device)
+model = AutoModelForCausalLM.from_pretrained("xxx", cache_dir='xxxxxx').to(device)
 tokenizer = AutoTokenizer.from_pretrained("xxx", cache_dir='xxxxxx')
 
 from datasets import load_dataset
@@ -25,7 +25,8 @@ for begin_loc in tqdm(range(0, seq_len, stride)):
     tgt_loc = end_loc - prev_end_loc # just calculate the new part of seq
     
     input_ids = encodings.input_ids[:, begin_loc:end_loc].to(device)
-    target_ids = input_ids.clone()[:, :-tgt_loc] = -100 # set positions which aren't target as -100
+    target_ids = input_ids.clone()
+    target_ids[:, :-tgt_loc] = -100 # set positions which aren't target as -100
     # Note that -100 is a default value for pytorch CrossEntropyLoss to ignore the loss of these positions
     
     with torch.no_grad():
